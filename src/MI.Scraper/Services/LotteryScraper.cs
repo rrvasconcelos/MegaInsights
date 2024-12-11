@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using MI.Domain.Models;
 using MI.Scraper.Configuration;
 using MI.Scraper.Exceptions;
+using MI.Scraper.Factory;
 using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -17,47 +18,21 @@ public sealed class LotteryScraper : ILotteryScraper
     private readonly LotteryScraperOptions _options;
     private readonly IAsyncPolicy<IWebElement> _elementPolicy;
     private readonly IAsyncPolicy<ReadOnlyCollection<IWebElement>> _elementsPolicy;
+    private readonly IPolicyFactory _policyFactory;
     private bool _disposed;
 
-    public LotteryScraper(ILogger<LotteryScraper> logger, IWebDriver driver, IOptions<LotteryScraperOptions> options)
+    public LotteryScraper(
+        ILogger<LotteryScraper> logger,
+        IWebDriver driver,
+        IOptions<LotteryScraperOptions> options,
+        IPolicyFactory policyFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _driver = driver ?? throw new ArgumentNullException(nameof(driver));
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
-
-        // Element Policy
-        _elementPolicy = Policy<IWebElement>
-            .Handle<WebDriverException>()
-            .Or<NoSuchElementException>()
-            .WaitAndRetryAsync(
-                _options.RetryAttempts,
-                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                (exception, duration, retryCount, _) =>
-                {
-                    _logger.LogWarning(
-                        exception.Exception,
-                        "Attempt {RetryCount} to find element failed. Waiting {Duration} seconds before next attempt",
-                        retryCount,
-                        duration.TotalSeconds);
-                    return Task.CompletedTask;
-                });
-
-        // Elements Policy
-        _elementsPolicy = Policy<ReadOnlyCollection<IWebElement>>
-            .Handle<WebDriverException>()
-            .Or<NoSuchElementException>()
-            .WaitAndRetryAsync(
-                _options.RetryAttempts,
-                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                (exception, duration, retryCount, _) =>
-                {
-                    _logger.LogWarning(
-                        exception.Exception,
-                        "Attempt {RetryCount} to find elements failed. Waiting {Duration} seconds before next attempt",
-                        retryCount,
-                        duration.TotalSeconds);
-                    return Task.CompletedTask;
-                });
+        _policyFactory = policyFactory;
+        _elementPolicy = policyFactory.CreateElementPolicy(_options.RetryAttempts);
+        _elementsPolicy = policyFactory.CreateElementsPolicy(_options.RetryAttempts);
     }
 
     public async Task<IEnumerable<LotteryResult>> GetLotteryResultsAsync(CancellationToken cancellationToken = default)
@@ -65,13 +40,14 @@ public sealed class LotteryScraper : ILotteryScraper
         try
         {
             _logger.LogInformation(LogMessages.ScrapingStarted, "Starting lottery scraping process");
+
             cancellationToken.ThrowIfCancellationRequested();
 
             await _driver.Navigate().GoToUrlAsync(_options.LotteryUrl);
 
             _logger.LogInformation("Page Title: {Title}", _driver.Title);
 
-            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(_options.WaitTimeoutSeconds));
+            var wait = CreateWait();
             var results = new List<LotteryResult>();
 
             await ScrapeLotteryDataAsync(wait, results, cancellationToken);
@@ -108,7 +84,11 @@ public sealed class LotteryScraper : ILotteryScraper
         }
     }
 
-    private async Task ScrapeLotteryDataAsync(WebDriverWait wait, List<LotteryResult> results,
+    private WebDriverWait CreateWait() => new(_driver, TimeSpan.FromSeconds(_options.WaitTimeoutSeconds));
+
+    private async Task ScrapeLotteryDataAsync(
+        WebDriverWait wait, 
+        List<LotteryResult> results,
         CancellationToken cancellationToken)
     {
         try

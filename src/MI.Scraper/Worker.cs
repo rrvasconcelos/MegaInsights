@@ -1,8 +1,11 @@
+using EFCore.BulkExtensions;
+using MI.Domain.Models;
+using MI.Infra.Data;
 using MI.Scraper.Services;
 
 namespace MI.Scraper
 {
-    public partial class Worker(
+    public class Worker(
         IServiceProvider serviceProvider,
         ILogger<Worker> logger,
         ILotteryScraper lotteryScraper)
@@ -15,8 +18,16 @@ namespace MI.Scraper
             while (!stoppingToken.IsCancellationRequested)
             {
                 var results = await lotteryScraper.GetLotteryResultsAsync(stoppingToken);
+
+                await using var scope = _serviceProvider.CreateAsyncScope();
+
+                var context = scope.ServiceProvider.GetRequiredService<MegaInsightsContext>();
+
+                var lotteryResults = results as LotteryResult[] ?? results.ToArray();
                 
-                logger.LogInformation("Quantidade de resultados encontrados: {Count}", results.Count());
+                await context.BulkInsertAsync(lotteryResults, cancellationToken: stoppingToken);
+
+                logger.LogInformation("Quantidade de resultados encontrados: {Length}", lotteryResults.Length);
 
                 await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
             }

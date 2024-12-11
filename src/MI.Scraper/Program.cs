@@ -1,6 +1,7 @@
 using MI.Infra.Data;
 using MI.Scraper;
 using MI.Scraper.Configuration;
+using MI.Scraper.Factory;
 using MI.Scraper.Services;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
@@ -12,19 +13,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.Configure<LotteryScraperOptions>(builder.Configuration.GetSection("LotteryScraper"));
 
-builder.Services.AddDbContext<MegaInsightsContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<MegaInsightsContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddTransient<ILotteryScraper, LotteryScraper>();
-
-builder.Services.AddTransient<IWebDriver>(provider =>
-{
-    var options = new ChromeOptions();
-    options.AddArgument("--headless");
-    options.AddArgument("--no-sandbox");
-    options.AddArgument("--disable-dev-shm-usage");
-    return new ChromeDriver();
-});
+builder.Services.AddTransient<IPolicyFactory, PolicyFactory>();
+builder.Services.AddTransient<IWebDriver>(provider => new ChromeDriver());
 
 builder.Services.AddHostedService<Worker>();
 
