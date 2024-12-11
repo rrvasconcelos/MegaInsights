@@ -14,7 +14,7 @@ namespace MI.Scraper
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var results = await lotteryScraper.GetLotteryResultsAsync();
+                var results = await lotteryScraper.GetLotteryResultsAsync(stoppingToken);
                 
                 logger.LogInformation("Quantidade de resultados encontrados: {Count}", results.Count());
 

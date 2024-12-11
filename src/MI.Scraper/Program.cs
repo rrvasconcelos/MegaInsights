@@ -1,5 +1,6 @@
 using MI.Infra.Data;
 using MI.Scraper;
+using MI.Scraper.Configuration;
 using MI.Scraper.Services;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
@@ -8,6 +9,8 @@ using OpenQA.Selenium.Chrome;
 var builder = Host.CreateApplicationBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.Configure<LotteryScraperOptions>(builder.Configuration.GetSection("LotteryScraper"));
 
 builder.Services.AddDbContext<MegaInsightsContext>(options =>
     options.UseSqlServer(connectionString));
