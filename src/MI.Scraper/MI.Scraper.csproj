@@ -24,5 +24,6 @@
     <ItemGroup>
       <ProjectReference Include="..\MI.Domain\MI.Domain.csproj" />
       <ProjectReference Include="..\MI.Infra.Data\MI.Infra.Data.csproj" />
+      <ProjectReference Include="..\MI.Infra.Scraping\MI.Infra.Scraping.csproj" />
     </ItemGroup>
 </Project>

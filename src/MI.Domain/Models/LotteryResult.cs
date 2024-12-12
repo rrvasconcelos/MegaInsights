@@ -24,6 +24,7 @@ public class LotteryResult
     public int Result04 { get; private set; }
     public int Result05 { get; private set; }
     public int Result06 { get; private set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     private void InsertResults(IReadOnlyList<int> results)
     {

@@ -1,7 +1,7 @@
 using EFCore.BulkExtensions;
 using MI.Domain.Models;
 using MI.Infra.Data;
-using MI.Scraper.Services;
+using MI.Infra.Scraping.Interfaces;
 
 namespace MI.Scraper
 {
