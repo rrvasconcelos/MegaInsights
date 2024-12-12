@@ -25,7 +25,8 @@ namespace MI.Infra.Data.Migrations
                     Result03 = table.Column<int>(type: "int", nullable: false),
                     Result04 = table.Column<int>(type: "int", nullable: false),
                     Result05 = table.Column<int>(type: "int", nullable: false),
-                    Result06 = table.Column<int>(type: "int", nullable: false)
+                    Result06 = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

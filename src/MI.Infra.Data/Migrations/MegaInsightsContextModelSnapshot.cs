@@ -36,6 +36,9 @@ namespace MI.Infra.Data.Migrations
                     b.Property<int>("ContestId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateOnly>("DrawDate")
                         .HasColumnType("date");
 

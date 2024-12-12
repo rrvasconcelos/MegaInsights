@@ -7,6 +7,7 @@ public class LotteryResult
         DrawDate = drawDate;
         ContestId = contestId;
         Accumulated = accumulated;
+        
         InsertResults(results);
     }
 
@@ -14,7 +15,7 @@ public class LotteryResult
     {
     }
 
-    public long Id { get; }
+    public long Id { get; init; }
     public DateOnly DrawDate { get; private set; }
     public int ContestId { get; private set; }
     public decimal Accumulated { get; private set; }
@@ -24,13 +25,13 @@ public class LotteryResult
     public int Result04 { get; private set; }
     public int Result05 { get; private set; }
     public int Result06 { get; private set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
 
     private void InsertResults(IReadOnlyList<int> results)
     {
-        if (results.Count == 0)
+        if (results is not { Count: 6 })
         {
-            throw new NullReferenceException();
+            throw new ArgumentException("A lista de resultados deve conter exatamente 6 elementos.", nameof(results));
         }
 
         Result01 = results[0];

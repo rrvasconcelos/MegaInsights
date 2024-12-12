@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MI.Infra.Data.Migrations
 {
     [DbContext(typeof(MegaInsightsContext))]
-    [Migration("20241211204242_Initial")]
+    [Migration("20241212200914_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -38,6 +38,9 @@ namespace MI.Infra.Data.Migrations
 
                     b.Property<int>("ContestId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateOnly>("DrawDate")
                         .HasColumnType("date");
