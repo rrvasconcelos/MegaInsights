@@ -26,4 +26,5 @@ Web scraper para resultados da loteria desenvolvido em .NET 9.
 5. Abra um Pull Request
 
 📝 Licença
+
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
