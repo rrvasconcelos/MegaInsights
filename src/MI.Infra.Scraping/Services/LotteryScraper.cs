@@ -244,6 +244,7 @@ public sealed class LotteryScraper : ILotteryScraper
             "Draw: {DrawNumber} - Numbers: {Numbers}",
             drawNumber,
             string.Join(", ", numbers));
+
     }
 
     private async Task<IWebElement> WaitForElementWithRetryAsync(By by, WebDriverWait wait,
