@@ -1,30 +1,60 @@
-# Mega Insights
+# 🎲 Mega Insights
 
-Web scraper para resultados da loteria desenvolvido em .NET 9.
+Um Web Scraper de resultados da Loteria desenvolvido com .NET 9 e práticas modernas de desenvolvimento.
 
-## 🚀 Como começar
+## 📋 Sobre o Projeto
+
+O Mega Insights é um Worker Service que automaticamente coleta e armazena resultados históricos da Mega-Sena, criando uma base de dados estruturada para análises futuras e insights estatísticos.
+
+## 🛠️ Tecnologias e Práticas
+
+### Core
+- .NET 9 Worker Service
+- Selenium WebDriver
+- Entity Framework Core
+- SQL Server
+
+### Arquitetura e Padrões
+- Clean Architecture
+- Repository Pattern
+- Dependency Injection
+- SOLID Principles
+
+### Resiliência e Logging
+- Polly Retry Policies
+- Circuit Breaker Pattern
+- Structured Logging
+- Resource Management (IDisposable)
+- Async/Await com CancellationToken
+
+## 🔍 Funcionalidades Principais
+
+- ✅ Coleta automatizada de resultados
+- ✅ Tratamento robusto de erros
+- ✅ Persistência estruturada
+- ✅ Logging detalhado
+- ✅ Configurações flexíveis
+
+## 🚀 Como Começar
 
 ### Pré-requisitos
-- .NET 9
+- .NET 9 SDK
 - SQL Server
 - Chrome/Firefox
 
 ### Instalação
-1. Clone o repositório
-   ```bash
-   git clone https://github.com/seu-usuario/mega-insights.git
-2. Configure as variáveis de ambiente
-3. Execute as migrations
-4. Rode o projeto
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/mega-insights.git
 
-🤝 Como contribuir
+# Navegue até o diretório
+cd mega-insights
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (git checkout -b feature/AmazingFeature)
-3. Commit suas mudanças (git commit -m 'Add some AmazingFeature')
-4. Push para a branch (git push origin feature/AmazingFeature)
-5. Abra um Pull Request
+# Restaure os pacotes
+dotnet restore
 
-📝 Licença
+# Configure o banco de dados
+dotnet ef database update
 
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
+# Execute o projeto
+dotnet run
