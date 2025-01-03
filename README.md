@@ -1,48 +1,56 @@
 # 🎲 Mega Insights
 
-Um Web Scraper de resultados da Loteria desenvolvido com .NET 9 e práticas modernas de desenvolvimento.
+Web Scraper de resultados da Loteria desenvolvido com .NET 9 e práticas modernas de desenvolvimento.
 
-## 📋 Sobre o Projeto
+## 📋 Pré-requisitos
 
-O Mega Insights é um Worker Service que automaticamente coleta e armazena resultados históricos da Mega-Sena, criando uma base de dados estruturada para análises futuras e insights estatísticos.
+- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- SQL Server (escolha uma opção):
+  - [SQL Server Local](https://www.microsoft.com/sql-server/sql-server-downloads)
+  - [Docker](https://www.docker.com/products/docker-desktop/)
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) ou [VS Code](https://code.visualstudio.com/)
 
-## 🛠️ Tecnologias e Práticas
+## 🚀 Configuração do Ambiente
 
-### Core
-- .NET 9 Worker Service
-- Selenium WebDriver
-- Entity Framework Core
-- SQL Server
+### 1. SQL Server com Docker (Recomendado)
 
-### Arquitetura e Padrões
-- Clean Architecture
-- Repository Pattern
-- Dependency Injection
-- SOLID Principles
+```bash
+# Pull da imagem
+docker pull mcr.microsoft.com/mssql/server:2022-latest
 
-### Resiliência e Logging
-- Polly Retry Policies
-- Circuit Breaker Pattern
-- Structured Logging
-- Resource Management (IDisposable)
-- Async/Await com CancellationToken
+# Criar e executar container
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Sua@Senha123" \
+   -p 1433:1433 --name sqlserver --hostname sqlserver \
+   -d mcr.microsoft.com/mssql/server:2022-latest
+```
 
-## 🔍 Funcionalidades Principais
+### 2. Configuração da Connection String
 
-- ✅ Coleta automatizada de resultados
-- ✅ Tratamento robusto de erros
-- ✅ Persistência estruturada
-- ✅ Logging detalhado
-- ✅ Configurações flexíveis
+```bash
+# No Visual Studio 2022:
+1. Clique direito no projeto MI.Scraper
+2. Selecione "Manage User Secrets"
+3. Adicione sua connection string:
 
-## 🚀 Como Começar
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=loteriaDb;User ID=sa;Password=Sua@Senha123;Trusted_Connection=False; TrustServerCertificate=True;"
+  }
+}
+```
 
-### Pré-requisitos
-- .NET 9 SDK
-- SQL Server
-- Chrome/Firefox
+### 3. Migrations
 
-### Instalação
+```bash
+# No terminal, na pasta do projeto MI.Scraper:
+dotnet ef database update
+
+# Ou no Package Manager Console do Visual Studio:
+Update-Database
+```
+
+## 💻 Executando o Projeto
+
 ```bash
 # Clone o repositório
 git clone https://github.com/seu-usuario/mega-insights.git
@@ -53,8 +61,53 @@ cd mega-insights
 # Restaure os pacotes
 dotnet restore
 
-# Configure o banco de dados
-dotnet ef database update
-
 # Execute o projeto
-dotnet run
+dotnet run --project src/MI.Scraper/MI.Scraper.csproj
+```
+
+## ⚙️ Configurações
+
+O projeto usa diferentes fontes de configuração:
+
+- `appsettings.json` - Configurações base do scraper
+- User Secrets - Connection string (desenvolvimento)
+- Variáveis de ambiente (produção)
+
+### Configurações do Scraper
+
+```json
+{
+  "LotteryScraper": {
+    "MaxDraws": 2000,
+    "WaitTimeoutSeconds": 20,
+    "RetryAttempts": 3,
+    "LotteryUrl": "https://loterias.caixa.gov.br/Paginas/Mega-Sena.aspx"
+  }
+}
+```
+
+## 🤝 Contribuindo
+
+1. Faça um Fork do projeto
+2. Crie uma Branch para sua Feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a Branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT - veja o arquivo [LICENSE.md](LICENSE.md) para detalhes.
+
+## 📊 Features Planejadas
+
+- [ ] Análises estatísticas
+- [ ] Dashboard para visualização
+- [ ] Suporte a outros tipos de loteria
+- [ ] Testes automatizados
+- [ ] Pipeline CI/CD
+
+---
+
+<p align="center">
+Feito com ❤️ por Rodrigo Vasconcelos
+</p>
