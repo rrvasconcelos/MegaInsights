@@ -6,8 +6,7 @@ namespace MI.Scraper;
 
 public class Worker(
     IServiceProvider serviceProvider,
-    ILogger<Worker> logger,
-    ILotteryScraper lotteryScraper)
+    ILogger<Worker> logger)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -16,11 +15,12 @@ public class Worker(
         {
             logger.LogInformation("Processo iniciado.");
 
-            var results = await lotteryScraper.GetLotteryResultsAsync(stoppingToken);
-
             await using var scope = serviceProvider.CreateAsyncScope();
 
             var repository = scope.ServiceProvider.GetRequiredService<ILotteryResultRepository>();
+            var lotteryScraper = scope.ServiceProvider.GetRequiredService<ILotteryScraper>();
+
+            var results = await lotteryScraper.GetLotteryResultsAsync(stoppingToken);
 
             var lotteryResults = results as LotteryResult[] ?? results.ToArray();
             
@@ -33,7 +33,10 @@ public class Worker(
             }
             
             logger.LogInformation("registering results...");
+
             await repository.AddRangeAsync(lotteryResults, stoppingToken);
+
+            logger.LogInformation("Aguardando proxima execução.");
 
             await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }

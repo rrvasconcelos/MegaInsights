@@ -2,6 +2,8 @@ using MI.Domain.Interfaces.Repositories;
 using MI.Infra.Data;
 using MI.Infra.Data.Repositories;
 using MI.Infra.Scraping.Extensions;
+using MI.Infra.Scraping.Interfaces;
+using MI.Infra.Scraping.Services;
 using MI.Scraper;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<MegaInsightsContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<ILotteryResultRepository, LotteryResultRepository>();
+builder.Services.AddScoped<ILotteryScraper, LotteryScraper>();
 
 builder.Services.AddLotteryScraper(builder.Configuration);
 

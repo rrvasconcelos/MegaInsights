@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using MI.Domain.Dtos;
+using MI.Domain.Interfaces.Repositories;
 using MI.Domain.Models;
 using MI.Infra.Scraping.Configuration;
 using MI.Infra.Scraping.Constants;
@@ -22,23 +24,28 @@ public sealed class LotteryScraper : ILotteryScraper
     private readonly LotteryScraperOptions _options;
     private readonly IAsyncPolicy<IWebElement> _elementPolicy;
     private readonly IAsyncPolicy<ReadOnlyCollection<IWebElement>> _elementsPolicy;
+    private readonly ILotteryResultRepository _repository;
     private bool _disposed;
-    
+
     public LotteryScraper(
         ILogger<LotteryScraper> logger,
         IWebDriver driver,
         IOptions<LotteryScraperOptions> options,
-        IPolicyFactory policyFactory)
+        IPolicyFactory policyFactory,
+        ILotteryResultRepository repository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _driver = driver ?? throw new ArgumentNullException(nameof(driver));
         _options = options.Value ?? throw new ArgumentNullException(nameof(options));
         _elementPolicy = policyFactory.CreateElementPolicy(_options.RetryAttempts);
         _elementsPolicy = policyFactory.CreateElementsPolicy(_options.RetryAttempts);
+        _repository = repository;
     }
-    
-        public async Task<IEnumerable<LotteryResult>> GetLotteryResultsAsync(CancellationToken cancellationToken = default)
+
+    public async Task<IEnumerable<LotteryResult>> GetLotteryResultsAsync(CancellationToken cancellationToken = default)
     {
+        var results = new List<LotteryResult>();
+
         try
         {
             _logger.LogInformation(LogMessages.ScrapingStarted, "Starting lottery scraping process");
@@ -50,31 +57,28 @@ public sealed class LotteryScraper : ILotteryScraper
             _logger.LogInformation("Page Title: {Title}", _driver.Title);
 
             var wait = CreateWait();
-            var results = new List<LotteryResult>();
 
             await ScrapeLotteryDataAsync(wait, results, cancellationToken);
 
             _logger.LogInformation(LogMessages.ScrapingCompleted,
                 "Scraping completed successfully. Total results: {Count}", results.Count);
-
-            return results;
         }
         catch (Exception ex) when (ex is WebDriverTimeoutException or NoSuchElementException or BrokenCircuitException)
         {
             _logger.LogError(LogMessages.ScrapingError, ex, "An error occurred during scraping.");
-            throw new ScrapingException("An error occurred during scraping", ex);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            _logger.LogInformation("Operation was cancelled");
-            throw;
+            _logger.LogInformation("Operation was cancelled {Message}", ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(LogMessages.ScrapingError, ex, "An unexpected error occurred during scraping.");
-            throw new ScrapingException("An unexpected error occurred during scraping", ex);
         }
+
+        return results;
     }
+
 
     private WebDriverWait CreateWait() => new(_driver, TimeSpan.FromSeconds(_options.WaitTimeoutSeconds));
 
@@ -86,20 +90,36 @@ public sealed class LotteryScraper : ILotteryScraper
         try
         {
             var count = 0;
-            while (count < _options.MaxDraws && !cancellationToken.IsCancellationRequested)
+
+            DrawIdentificationDto resultData = default!;
+
+            var lastResult = await _repository.GetLastResultAsync(cancellationToken);
+
+            while (CanGetResults(count, cancellationToken))
             {
                 var drawElement = await WaitForElementWithRetryAsync(By.CssSelector(Selectors.DrawTitle), wait, cancellationToken);
 
                 var previousText = drawElement.Text;
                 _logger.LogInformation(LogMessages.DrawProcessed, "Processing Draw: {Text}", previousText);
 
-                var drawData = GetDrawData(drawElement);
+                resultData = GetDrawData(drawElement);
+
+                if (resultData.Date.Equals(lastResult?.DrawDate))
+                {
+                    return;
+                }
+
                 var numbers = await CaptureDrawNumbers(wait, cancellationToken);
-                LogDrawInfo(drawData.drawNumber, numbers);
+                LogDrawInfo(resultData.Number, numbers);
 
                 var accumulated = await GetAccumulatedValue(wait, cancellationToken);
 
-                results.Add(new LotteryResult(drawData.drawDate, drawData.drawNumber, accumulated, numbers));
+                results.Add(new LotteryResult(resultData.Date, resultData.Number, accumulated, numbers));
+
+                if (resultData.Date.Equals(DateOnly.Parse("1996-03-11")))
+                {
+                    return;
+                }
 
                 await NavigateToPreviousPage(wait, cancellationToken);
                 await WaitForNextDrawAsync(wait, previousText, cancellationToken);
@@ -112,6 +132,11 @@ public sealed class LotteryScraper : ILotteryScraper
             _logger.LogInformation("Scraping operation was cancelled");
             throw;
         }
+    }
+
+    private bool CanGetResults(int count, CancellationToken cancellationToken)
+    {
+        return count < _options.MaxDraws && !cancellationToken.IsCancellationRequested;
     }
 
     private async Task<decimal> GetAccumulatedValue(WebDriverWait wait, CancellationToken cancellationToken)
@@ -139,7 +164,7 @@ public sealed class LotteryScraper : ILotteryScraper
         }
     }
 
-    private (int drawNumber, DateOnly drawDate) GetDrawData(IWebElement? element)
+    private DrawIdentificationDto GetDrawData(IWebElement? element)
     {
         Guard.AgainstNullOrEmpty(element?.Text, nameof(element));
 
@@ -155,7 +180,7 @@ public sealed class LotteryScraper : ILotteryScraper
         }
 
         if (int.TryParse(data[1], out var drawNumber))
-            return (drawNumber, drawDate);
+            return new(drawNumber, drawDate);
 
         throw new ScrapingException($"Invalid draw number format: {data[1]}");
     }
@@ -198,7 +223,9 @@ public sealed class LotteryScraper : ILotteryScraper
         }
     }
 
-    private async Task WaitForNextDrawAsync(WebDriverWait wait, string previousText,
+    private static async Task WaitForNextDrawAsync(
+        WebDriverWait wait,
+        string previousText,
         CancellationToken cancellationToken)
     {
         await Task.Run(() =>
