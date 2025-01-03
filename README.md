@@ -2,6 +2,82 @@
 
 Web Scraper de resultados da Loteria desenvolvido com .NET 9 e práticas modernas de desenvolvimento.
 
+## 🛠️ Tecnologias e Padrões
+
+### Arquitetura
+
+- Clean Architecture
+- Domain-Driven Design (DDD)
+- SOLID Principles
+- Repository Pattern
+
+### Core
+
+- .NET 9 Worker Service
+- Entity Framework Core
+- SQL Server
+- Selenium WebDriver
+
+### Resiliência e Performance
+
+- Polly
+  - Retry Policies
+  - Circuit Breaker
+- Async/Await
+- Task Parallel Library
+
+### Boas Práticas
+
+- Dependency Injection
+- Logging Estruturado
+- Configurações Externalizadas
+- Gerenciamento de Recursos (IDisposable)
+
+### Segurança
+
+- User Secrets
+- Configurações Sensíveis Protegidas
+- Branch Protection
+- Controle de Merge via Pull Requests
+
+### Organização do Código
+
+```
+📁 MegaInsights/
+├── 📁 src/
+│   ├── 📁 MI.Domain/
+│   │   ├── 📄 Models
+│   │   ├── 📄 Interfaces
+│   │   └── 📄 DTOs
+│   ├── 📁 MI.Infra.Data/
+│   │   ├── 📄 Context
+│   │   ├── 📄 Repositories
+│   │   └── 📄 Migrations
+│   ├── 📁 MI.Infra.Scraping/
+│   │   ├── 📄 Services
+│   │   ├── 📄 Interfaces
+│   │   └── 📄 Configuration
+│   └── 📁 MI.Scraper/
+│       ├── 📄 Worker
+│       └── 📄 Program
+```
+
+### Padrões de Código
+
+- Clean Code
+- Nomenclatura Clara e Significativa
+- Métodos Pequenos e Focados
+- Separação de Responsabilidades
+- Princípio DRY (Don't Repeat Yourself)
+
+### Features Implementadas
+
+- ✅ Web Scraping Automatizado
+- ✅ Persistência em Banco de Dados
+- ✅ Tratamento de Erros Robusto
+- ✅ Logging Detalhado
+- ✅ Configurações Flexíveis
+
 ## 📋 Pré-requisitos
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download)
