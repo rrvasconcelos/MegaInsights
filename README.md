@@ -2,7 +2,38 @@
 
 Web Scraper de resultados da Loteria desenvolvido com .NET 9 e práticas modernas de desenvolvimento.
 
-## 🛠️ Tecnologias e Padrões
+## 📖 Sobre o Projeto
+
+O Mega Insights nasceu da necessidade de coletar e analisar dados históricos da Mega-Sena de forma automatizada e confiável. O projeto tem múltiplos objetivos:
+
+### 🎯 Propósito
+
+- Coletar automaticamente todos os resultados históricos da Mega-Sena
+- Criar uma base de dados estruturada para análises
+- Permitir estudos estatísticos dos resultados
+- Facilitar a visualização de padrões e tendências
+
+### 💡 Por que foi criado?
+
+- Dificuldade em encontrar dados históricos completos
+- Necessidade de dados estruturados para análise
+- Oportunidade de aplicar práticas modernas de desenvolvimento
+- Base para futuras análises e dashboards
+
+### 🔄 Como funciona
+
+1. Coleta automática dos resultados do site oficial
+2. Processamento e estruturação dos dados
+3. Armazenamento em banco de dados
+4. Base para análises futuras e visualizações
+
+### 📊 Objetivos Futuros
+
+- Análises estatísticas aprofundadas
+- Dashboards interativos
+- Identificação de padrões
+- Suporte a outros tipos de loteria
+- API para consumo dos dados
 
 ### Arquitetura
 
